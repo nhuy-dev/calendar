@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Lịch Cute ✨ — Lịch tuần, follow bạn & check var giấc ngủ</title>
-<meta name="description" content="PWA lịch tuần pastel xanh: lặp lại hàng tuần, reset tuần hiện tại, follow bạn bè, nhắc hẹn, check var giấc ngủ.">
+<title>Lịch — Giúp bạn quản lý thời gian của mình</title>
+<meta name="description" content="PWA lịch: lặp lại hàng tuần, reset tuần hiện tại, follow bạn bè, nhắc hẹn, check var giấc ngủ.">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#a5d8ff">
 <link rel="icon" href="icons/icon-192.png">
@@ -68,7 +68,7 @@ code{word-break:break-all;background:#f0f8ff;padding:8px;border-radius:10px;disp
 <div class="wrap">
 <header>
 <div class="logo">🗓️</div>
-<div><h1>Lịch Cute <span style="color:#f2b705">✦</span></h1><p>Xanh pastel, cute, không drama — chỉ lịch và giấc ngủ thôi 💙 <span class="chip">Bản v1.4 • tài khoản trống + link ngắn</span></p></div>
+<div><h1>Lịch của bạn 💙<span style="color:#f2b705">✦</span></h1><p>không drama — chỉ lịch và giấc ngủ thôi 💙 <span class="chip">• Bản v1.4</span></p></div>
 <div class="pill"><span class="chip" id="whoami"></span><button class="btn small" onclick="openProfile()">👤 Hồ sơ của tui</button><button class="btn small white" onclick="shareMe()">🔗 Mã chia sẻ</button><button class="btn small white" onclick="askNotif()">🔔 Bật nhắc hẹn</button><button class="btn small white" onclick="logout()">🚪 Đăng xuất</button></div>
 </header>
 
@@ -87,7 +87,7 @@ code{word-break:break-all;background:#f0f8ff;padding:8px;border-radius:10px;disp
 <button class="btn small" onclick="goToday()">Hôm nay</button>
 <button class="btn small white" onclick="moveWeek(1)">Tuần sau ▶</button>
 <strong id="weekLabel"></strong>
-<span id="syncBadge" class="chip">💾 Lưu trên máy này</span>
+<span id="syncBadge" class="chip">💾 Chỉ lưu trên máy này</span>
 </div>
 <p class="sub">Lịch lặp lại sẽ tự hiện lại mỗi tuần. Muốn đổi riêng tuần này thì bấm vào lịch đó → chọn <b>“Sửa tuần này thôi”</b>. Muốn quay về lịch gốc thì bấm <b>Reset tuần này</b>.</p>
 <div class="row"><button class="btn" onclick="openEventForm()">＋ Thêm lịch mới</button><button class="btn white" onclick="resetWeek()">↩ Reset tuần này về lịch gốc</button><button class="btn white" onclick="document.getElementById('tab-banbe').scrollIntoView()">👀 Xem lịch bạn bè</button></div>
@@ -101,7 +101,7 @@ code{word-break:break-all;background:#f0f8ff;padding:8px;border-radius:10px;disp
 <!-- BẠN BÈ -->
 <section id="tab-banbe" style="display:none">
 <div class="card"><h2>👯 Follow bạn bè</h2><p class="sub">Chỉ những người bạn follow mới thấy được lịch của nhau. Bạn bè gửi link cho bạn, bạn mở link là tự follow — không ai tự dưng xem lén được.</p>
-<div class="grid2"><div><label>Tên đăng nhập của bạn (chỉ khi đã nối Supabase)</label><input id="friendName" placeholder="VD: lecute"><button class="btn" onclick="addFriendByName()">＋ Follow bạn này</button><p class="muted">Nhập đúng tên đăng nhập là app tự lấy lịch thật từ Supabase. Chưa nối Supabase thì dùng link ở ô bên phải.</p></div>
+<div class="grid2"><div><label>Tên đăng nhập của bạn</label><input id="friendName" placeholder="VD: nhuene"><button class="btn" onclick="addFriendByName()">＋ Follow bạn này</button><p class="muted">Nhập đúng tên đăng nhập!</p></div>
 <div><label>Dán link chia sẻ của bạn bè</label><textarea id="friendCode" rows="3" placeholder="Dán cả link bạn bè gửi cho bạn vào đây…"></textarea><button class="btn" onclick="importFriend()">📥 Nhập link & Follow</button></div></div>
 <div id="friendList"></div></div>
 <div class="card"><h2>🫣 Lịch của bạn đã chọn</h2><p class="sub" id="friendWeekLabel"></p><div class="days" id="friendDays"></div>
@@ -123,7 +123,6 @@ code{word-break:break-all;background:#f0f8ff;padding:8px;border-radius:10px;disp
 <section id="tab-caidat" style="display:none">
 <div class="card"><h2>⚙️ Cài đặt & chia sẻ</h2>
 <p><b>Chế độ hiện tại:</b> <span id="modeText"></span></p>
-<p class="sub">Muốn bạn bè thấy lịch <b>trực tiếp, cập nhật liền</b> thì cần bật Supabase (xem file README-HUONG-DAN.md). Chưa bật thì vẫn dùng ngon bằng mã chia sẻ: bạn đổi lịch → tạo mã mới → gửi lại cho bạn bè.</p>
 <div class="row"><button class="btn" onclick="shareMe()">🔗 Lấy link chia sẻ của tui</button><button class="btn white" onclick="exportBackup()">⬇ Xuất backup JSON</button><button class="btn white" onclick="document.getElementById('importFile').click()">⬆ Nhập backup</button><input type="file" id="importFile" accept=".json" hidden onchange="importBackup(event)"></div>
 <hr><h3>🧹 Dọn trống dữ liệu</h3>
 <p class="sub">Dành cho các tài khoản cũ đang dính dữ liệu demo: dọn trống chỉ xóa lịch, bạn bè, lịch sử ngủ của tài khoản đang đăng nhập, giữ lại tên và avatar.</p>
@@ -141,7 +140,7 @@ code{word-break:break-all;background:#f0f8ff;padding:8px;border-radius:10px;disp
 <div id="registerForm" style="display:none"><label style="text-align:left;display:block">Tên đăng nhập</label><input id="regUser" placeholder="VD: lecute"><label style="text-align:left;display:block">Tên hiển thị</label><input id="regName" placeholder="VD: Lê Cute"><label style="text-align:left;display:block">Mật khẩu</label><input id="regPass" type="password" placeholder="Tối thiểu 4 ký tự"><label style="text-align:left;display:block">Nhập lại mật khẩu</label><input id="regPass2" type="password" placeholder="Nhập lại mật khẩu"><button class="btn" style="width:100%" onclick="doRegister()">✨ Đăng ký</button><p class="muted">Tài khoản mới bắt đầu trống hoàn toàn, không có lịch mẫu. Muốn xem thử dữ liệu mẫu thì dùng nút demo ở dưới.</p></div>
 <hr><button class="btn white" style="width:100%" onclick="useDemo()">👀 Vào thử với dữ liệu demo, không cần đăng nhập</button>
 <button class="btn white small" style="width:100%;margin-top:8px" onclick="resetDemo()">↩ Lịch demo bị trống? Bấm để khôi phục lại lịch mẫu</button>
-<p class="muted" style="margin-top:12px">Lưu ý: tài khoản này chỉ lưu trên máy/trình duyệt này (local), chưa phải tài khoản server chung. Mỗi máy sẽ có tài khoản riêng, muốn share cho bạn bè thì vẫn dùng mã chia sẻ hoặc Supabase như trước.</p>
+<p class="muted" style="margin-top:12px">Lưu ý: tài khoản này chỉ lưu trên máy/trình duyệt này (local), chưa phải tài khoản server chung. Mỗi máy sẽ có tài khoản riêng, muốn share cho bạn bè thì vẫn dùng mã chia sẻ</p>
 </div></div>
 <div class="toast" id="toast"></div>
 <div class="modal" id="modal"><div class="box" id="modalBox"></div></div>
