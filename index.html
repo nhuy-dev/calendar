@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lịch Cute ✨ — Lịch tuần, follow bạn & check var giấc ngủ</title>
+<meta name="description" content="PWA lịch tuần pastel xanh: lặp lại hàng tuần, reset tuần hiện tại, follow bạn bè, nhắc hẹn, check var giấc ngủ.">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#a5d8ff">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--blue1:#e8f4ff;--blue2:#cfeaff;--blue3:#a5d8ff;--blue4:#7cc4ff;--blue5:#4aa8f0;--ink:#1e3a52;--muted:#5b7a94;--white:#fff;--yellow:#ffe58a;--pink:#ffd6e8;--mint:#c9f2e2;--shadow:0 10px 30px rgba(74,168,240,.18)}
+*{box-sizing:border-box} body{margin:0;font-family:"Be Vietnam Pro",system-ui,sans-serif;color:var(--ink);background:linear-gradient(180deg,#eaf7ff 0%,#dff1ff 45%,#eaf6ff 100%);min-height:100vh}
+body:before{content:"✦ ⋆ ✧";position:fixed;top:8px;right:14px;font-size:20px;color:#8ecbff;opacity:.7;letter-spacing:6px;pointer-events:none}
+h1,h2,h3{font-family:"Baloo 2",cursive;margin:0} button,input,select,textarea{font:inherit}
+.wrap{max-width:1060px;margin:0 auto;padding:18px 14px 90px}
+header{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--white);border:2px solid #fff;border-radius:28px;padding:16px;box-shadow:var(--shadow)}
+.logo{width:58px;height:58px;border-radius:18px;background:var(--blue3);display:grid;place-items:center;font-size:32px;box-shadow:inset 0 -4px 0 rgba(255,255,255,.6)}
+header h1{font-size:30px;line-height:1} header p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.pill{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:0;border-radius:999px;padding:10px 16px;font-weight:700;cursor:pointer;background:var(--blue3);color:#123a5c;box-shadow:0 4px 0 #8ecbff}
+.btn:active{transform:translateY(3px);box-shadow:none} .btn.white{background:#fff;border:2px solid var(--blue2);box-shadow:none} .btn.small{padding:7px 12px;font-size:13px} .btn.danger{background:#ffd1d1;box-shadow:0 4px 0 #ffb3b3}
+.tabs{display:flex;gap:8px;margin:16px 0;flex-wrap:wrap}
+.tab{border:2px solid #fff;background:#ffffffaa;padding:10px 16px;border-radius:999px;font-weight:700;cursor:pointer}
+.tab.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.card{background:var(--white);border-radius:24px;padding:18px;box-shadow:var(--shadow);margin-bottom:16px;border:2px solid #ffffff}
+.card h2{font-size:22px;margin-bottom:4px} .sub{color:var(--muted);font-size:14px;margin:0 0 12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px} @media(max-width:700px){.grid2{grid-template-columns:1fr}}
+label{font-size:13px;font-weight:700;color:var(--muted)} input,select,textarea{width:100%;padding:11px 13px;border:2px solid var(--blue2);border-radius:14px;margin:5px 0 12px;background:#f7fcff;outline:none;color:var(--ink)}
+input:focus,select:focus{border-color:var(--blue5)}
+.weekbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.weekbar strong{font-family:"Baloo 2";font-size:19px}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:10px} @media(max-width:900px){.days{grid-template-columns:repeat(2,1fr)}} @media(max-width:480px){.days{grid-template-columns:1fr}}
+.day{border:2px dashed var(--blue2);border-radius:20px;padding:11px;min-height:170px;background:#f8fdff}
+.day.today{border-style:solid;border-color:var(--blue5);background:#eaf6ff;box-shadow:0 0 0 3px #d3ecff}
+.day h3{font-size:15px} .day small{color:var(--muted)}
+.ev{border-radius:13px;padding:9px 10px;margin-top:8px;font-size:13px;line-height:1.35;cursor:pointer;border-left:5px solid var(--blue5);background:#eef8ff}
+.ev b{display:block} .ev .meta{color:var(--muted);font-size:12px}
+.ev.Học{background:#e3f0ff;border-color:#5aa9f0}.ev.Làm{background:#e6f7ff;border-color:#38b6d3}.ev.Chơi{background:#fff3c4;border-color:#f2c14e}.ev.Nghỉ{background:#dcfce7;border-color:#4ade80}.ev.Khác{background:#ffe4f1;border-color:#f472b6}
+.ev.done{opacity:.55;text-decoration:line-through}
+.avatar{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-size:28px;border:3px solid #fff;box-shadow:var(--shadow);flex:none}
+.friend{display:flex;gap:12px;align-items:center;background:#f7fcff;border:2px solid var(--blue2);border-radius:18px;padding:12px;margin-top:10px}
+.friend p{margin:2px 0;color:var(--muted);font-size:13px}
+.sleepbar{height:12px;background:var(--blue1);border-radius:99px;overflow:hidden} .sleepbar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue4),#7ee2c0);border-radius:99px}
+.chip{display:inline-block;background:var(--blue1);border-radius:99px;padding:4px 10px;font-size:12px;font-weight:700;margin:2px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:13px 18px;border-radius:16px;box-shadow:var(--shadow);z-index:99;max-width:92vw;text-align:center;display:none}
+.modal{position:fixed;inset:0;background:rgba(20,50,80,.45);display:none;place-items:center;z-index:50;padding:16px} .modal.open{display:grid}
+.modal .box{background:#fff;border-radius:24px;padding:20px;max-width:520px;width:100%;max-height:90vh;overflow:auto;box-shadow:var(--shadow)}
+.emojis{display:flex;gap:8px;flex-wrap:wrap} .emojis button{font-size:26px;border:2px solid var(--blue2);background:#fff;border-radius:14px;padding:6px 10px;cursor:pointer}
+.emojis button.sel{border-color:var(--blue5);background:var(--blue1)}
+.muted{color:var(--muted);font-size:13px} .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+hr{border:0;border-top:2px dashed var(--blue2);margin:16px 0}
+code{word-break:break-all;background:#f0f8ff;padding:8px;border-radius:10px;display:block;font-size:12px}
+.auth{position:fixed;inset:0;background:linear-gradient(180deg,#eaf7ff,#cfeaff);display:none;place-items:center;z-index:200;padding:16px}
+.auth.open{display:grid}
+.auth-box{background:#fff;border-radius:28px;padding:24px;max-width:420px;width:100%;box-shadow:var(--shadow);text-align:center;border:2px solid #fff}
+.auth-box h2{font-size:28px} .auth-box input{text-align:left}
+.auth-tabs{display:flex;gap:8px;margin:14px 0} .auth-tabs button{flex:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<div class="logo">🗓️</div>
+<div><h1>Lịch Cute <span style="color:#f2b705">✦</span></h1><p>Xanh pastel, cute, không drama — chỉ lịch và giấc ngủ thôi 💙 <span class="chip">Bản v1.4 • tài khoản trống + link ngắn</span></p></div>
+<div class="pill"><span class="chip" id="whoami"></span><button class="btn small" onclick="openProfile()">👤 Hồ sơ của tui</button><button class="btn small white" onclick="shareMe()">🔗 Mã chia sẻ</button><button class="btn small white" onclick="askNotif()">🔔 Bật nhắc hẹn</button><button class="btn small white" onclick="logout()">🚪 Đăng xuất</button></div>
+</header>
+
+<div class="tabs">
+<button class="tab active" data-tab="lich" onclick="showTab('lich',this)">📅 Lịch tuần</button>
+<button class="tab" data-tab="banbe" onclick="showTab('banbe',this)">👯 Bạn bè & Follow</button>
+<button class="tab" data-tab="ngu" onclick="showTab('ngu',this)">🌙 Ngủ & Check var</button>
+<button class="tab" data-tab="caidat" onclick="showTab('caidat',this)">⚙️ Cài đặt</button>
+</div>
+
+<!-- LỊCH -->
+<section id="tab-lich">
+<div class="card">
+<div class="weekbar">
+<button class="btn small white" onclick="moveWeek(-1)">◀ Tuần trước</button>
+<button class="btn small" onclick="goToday()">Hôm nay</button>
+<button class="btn small white" onclick="moveWeek(1)">Tuần sau ▶</button>
+<strong id="weekLabel"></strong>
+<span id="syncBadge" class="chip">💾 Lưu trên máy này</span>
+</div>
+<p class="sub">Lịch lặp lại sẽ tự hiện lại mỗi tuần. Muốn đổi riêng tuần này thì bấm vào lịch đó → chọn <b>“Sửa tuần này thôi”</b>. Muốn quay về lịch gốc thì bấm <b>Reset tuần này</b>.</p>
+<div class="row"><button class="btn" onclick="openEventForm()">＋ Thêm lịch mới</button><button class="btn white" onclick="resetWeek()">↩ Reset tuần này về lịch gốc</button><button class="btn white" onclick="document.getElementById('tab-banbe').scrollIntoView()">👀 Xem lịch bạn bè</button></div>
+<div class="days" id="days"></div>
+</div>
+<div class="card"><h2>⏰ Sắp tới hôm nay</h2><p class="sub" id="todayList">Chưa có lịch hôm nay. Thêm một cái cho ngày đỡ trống nhé!</p>
+<div class="row"><label style="flex:1">Nhắc trước <select id="remindMin" onchange="saveSettings()"><option value="5">5 phút</option><option value="15" selected>15 phút</option><option value="30">30 phút</option><option value="60">60 phút</option></select></label><span class="muted">App sẽ nhắc bằng thông báo trong app, và bằng thông báo hệ thống nếu bạn đã bấm “Bật nhắc hẹn”.</span></div>
+</div>
+</section>
+
+<!-- BẠN BÈ -->
+<section id="tab-banbe" style="display:none">
+<div class="card"><h2>👯 Follow bạn bè</h2><p class="sub">Chỉ những người bạn follow mới thấy được lịch của nhau. Bạn bè gửi link cho bạn, bạn mở link là tự follow — không ai tự dưng xem lén được.</p>
+<div class="grid2"><div><label>Tên đăng nhập của bạn (chỉ khi đã nối Supabase)</label><input id="friendName" placeholder="VD: lecute"><button class="btn" onclick="addFriendByName()">＋ Follow bạn này</button><p class="muted">Nhập đúng tên đăng nhập là app tự lấy lịch thật từ Supabase. Chưa nối Supabase thì dùng link ở ô bên phải.</p></div>
+<div><label>Dán link chia sẻ của bạn bè</label><textarea id="friendCode" rows="3" placeholder="Dán cả link bạn bè gửi cho bạn vào đây…"></textarea><button class="btn" onclick="importFriend()">📥 Nhập link & Follow</button></div></div>
+<div id="friendList"></div></div>
+<div class="card"><h2>🫣 Lịch của bạn đã chọn</h2><p class="sub" id="friendWeekLabel"></p><div class="days" id="friendDays"></div>
+<div id="commonFree" style="margin-top:12px"></div></div>
+</section>
+
+<!-- NGỦ -->
+<section id="tab-ngu" style="display:none">
+<div class="grid2">
+<div class="card"><h2>🌙 Giấc ngủ của tui</h2><p class="sub" id="mySleepStatus"></p>
+<div class="row"><button class="btn" id="sleepBtn" onclick="toggleSleep()">😴 Tui đi ngủ đây</button><button class="btn white" onclick="logSleepManual()">＋ Ghi giấc ngủ đã qua</button></div>
+<p class="muted">Bật chế độ ngủ = bạn “offline ngủ”. Nếu trong lúc ngủ mà bạn vẫn bấm lung tung trong app, app sẽ ghi lại là “lỡ tay online” — và bạn bè check var sẽ thấy đó 👀. Công bằng mà, đúng không?</p>
+<div id="mySleepStats"></div><h3 style="margin-top:14px">Lịch sử ngủ gần đây</h3><div id="sleepHistory"></div></div>
+<div class="card"><h2>🕵️ Check var bạn bè</h2><p class="sub">Bấm “Check var” để xem bạn đó có đang ngủ thật không. Chỉ check được bạn đã follow, và chỉ dựa trên trạng thái họ tự bật + hoạt động trong app này.</p><div id="checkList"></div><p class="muted">Lưu ý nhẹ: đây là tính năng vui giữa bạn bè đã đồng ý share với nhau, không phải theo dõi lén. Ai không bật chế độ ngủ thì app sẽ báo “không rõ”, không tự suy đoán.</p></div>
+</div>
+</section>
+
+<!-- CÀI ĐẶT -->
+<section id="tab-caidat" style="display:none">
+<div class="card"><h2>⚙️ Cài đặt & chia sẻ</h2>
+<p><b>Chế độ hiện tại:</b> <span id="modeText"></span></p>
+<p class="sub">Muốn bạn bè thấy lịch <b>trực tiếp, cập nhật liền</b> thì cần bật Supabase (xem file README-HUONG-DAN.md). Chưa bật thì vẫn dùng ngon bằng mã chia sẻ: bạn đổi lịch → tạo mã mới → gửi lại cho bạn bè.</p>
+<div class="row"><button class="btn" onclick="shareMe()">🔗 Lấy link chia sẻ của tui</button><button class="btn white" onclick="exportBackup()">⬇ Xuất backup JSON</button><button class="btn white" onclick="document.getElementById('importFile').click()">⬆ Nhập backup</button><input type="file" id="importFile" accept=".json" hidden onchange="importBackup(event)"></div>
+<hr><h3>🧹 Dọn trống dữ liệu</h3>
+<p class="sub">Dành cho các tài khoản cũ đang dính dữ liệu demo: dọn trống chỉ xóa lịch, bạn bè, lịch sử ngủ của tài khoản đang đăng nhập, giữ lại tên và avatar.</p>
+<div class="row"><button class="btn white" onclick="clearCurrentAccount()">🧹 Dọn trống tài khoản này</button><button class="btn danger" onclick="clearAllAccounts()">🗑 Xóa tất cả tài khoản trên máy này</button></div>
+<hr><p class="sub">Cài đặt PWA: mở app bằng Chrome trên điện thoại → menu ⋮ → “Thêm vào màn hình chính” / “Install app”. App sẽ chạy offline với lịch đã lưu.</p>
+</div>
+</section>
+</div>
+
+<div class="auth" id="authOverlay"><div class="auth-box">
+<div class="logo" style="margin:0 auto 8px">🗓️</div><h2>Lịch Cute 💙</h2>
+<p class="sub">Đăng nhập để mở lịch của bạn, hoặc đăng ký tài khoản mới. Dữ liệu demo cũ vẫn giữ nguyên, không mất đâu.</p>
+<div class="auth-tabs"><button class="btn" id="tabLogin" onclick="authTab('login')">Đăng nhập</button><button class="btn white" id="tabRegister" onclick="authTab('register')">Đăng ký</button></div>
+<div id="loginForm"><label style="text-align:left;display:block">Tên đăng nhập</label><input id="loginUser" placeholder="VD: lecute" autocomplete="username"><label style="text-align:left;display:block">Mật khẩu</label><input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password"><button class="btn" style="width:100%" onclick="doLogin()">🔑 Đăng nhập</button></div>
+<div id="registerForm" style="display:none"><label style="text-align:left;display:block">Tên đăng nhập</label><input id="regUser" placeholder="VD: lecute"><label style="text-align:left;display:block">Tên hiển thị</label><input id="regName" placeholder="VD: Lê Cute"><label style="text-align:left;display:block">Mật khẩu</label><input id="regPass" type="password" placeholder="Tối thiểu 4 ký tự"><label style="text-align:left;display:block">Nhập lại mật khẩu</label><input id="regPass2" type="password" placeholder="Nhập lại mật khẩu"><button class="btn" style="width:100%" onclick="doRegister()">✨ Đăng ký</button><p class="muted">Tài khoản mới bắt đầu trống hoàn toàn, không có lịch mẫu. Muốn xem thử dữ liệu mẫu thì dùng nút demo ở dưới.</p></div>
+<hr><button class="btn white" style="width:100%" onclick="useDemo()">👀 Vào thử với dữ liệu demo, không cần đăng nhập</button>
+<button class="btn white small" style="width:100%;margin-top:8px" onclick="resetDemo()">↩ Lịch demo bị trống? Bấm để khôi phục lại lịch mẫu</button>
+<p class="muted" style="margin-top:12px">Lưu ý: tài khoản này chỉ lưu trên máy/trình duyệt này (local), chưa phải tài khoản server chung. Mỗi máy sẽ có tài khoản riêng, muốn share cho bạn bè thì vẫn dùng mã chia sẻ hoặc Supabase như trước.</p>
+</div></div>
+<div class="toast" id="toast"></div>
+<div class="modal" id="modal"><div class="box" id="modalBox"></div></div>
+<script>
+const DB_KEY='lich-cute-v1';
+const TAGS=['Học','Làm','Chơi','Nghỉ','Khác'];
+let weekOffset=0, selectedFriend=null, supa=null;
+const $=id=>document.getElementById(id);
+const today=new Date(); today.setHours(0,0,0,0);
+function mondayOf(d){const x=new Date(d);const day=(x.getDay()+6)%7;x.setDate(x.getDate()-day);return x}
+function fmtDate(d){return d.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'})}
+function weekKey(d){const m=mondayOf(d);return m.toISOString().slice(0,10)}
+function uid(){return 'id'+Math.random().toString(36).slice(2,9)}
+function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',3200)}
+function load(){try{return JSON.parse(localStorage.getItem(DB_KEY))||null}catch(e){return null}}
+const ACC_KEY='lich-cute-accounts-v1', SES_KEY='lich-cute-session-v1';
+let currentUser=null;
+function loadAccounts(){try{return JSON.parse(localStorage.getItem(ACC_KEY))||{}}catch(e){return {}}}
+function persistAccounts(a){localStorage.setItem(ACC_KEY,JSON.stringify(a))}
+function save(){localStorage.setItem(DB_KEY,JSON.stringify(db)); if(currentUser){const a=loadAccounts(); if(a[currentUser]){a[currentUser].data=db; persistAccounts(a);}} renderAll();syncCloud().catch(()=>{})}
+let db=load()||seed();
+function seed(){
+ const mon=mondayOf(today);
+ return {profile:{id:uid(),name:'Bạn Cute',avatar:'🐰',color:'#a5d8ff'},
+ events:[
+  {id:uid(),title:'Học trên lớp',day:0,start:'07:00',end:'09:30',tag:'Học',repeat:true,note:'Mang vở + bút'},
+  {id:uid(),title:'Làm bài tập nhóm',day:2,start:'14:00',end:'16:00',tag:'Học',repeat:true,note:''},
+  {id:uid(),title:'Chơi cầu lông',day:4,start:'17:00',end:'18:30',tag:'Chơi',repeat:true,note:''},
+  {id:uid(),title:'Nghỉ ngơi, xem phim',day:6,start:'20:00',end:'22:00',tag:'Nghỉ',repeat:false,note:''}],
+ overrides:{}, // weekKey -> {eventId: {deleted:true} or edited fields}
+ friends:[
+  {id:'demo1',name:'Minh Anh',avatar:'🐱',sleeping:true,sleepSince:Date.now()-1000*60*60*5,lastActive:Date.now()-1000*60*60*5,caught:0,events:[
+    {id:'d1',title:'Học tiếng Anh',day:0,start:'08:00',end:'10:00',tag:'Học',repeat:true},
+    {id:'d2',title:'Đi làm thêm',day:2,start:'13:00',end:'17:00',tag:'Làm',repeat:true},
+    {id:'d3',title:'Ngủ sớm challenge',day:6,start:'22:00',end:'23:00',tag:'Nghỉ',repeat:true}]},
+  {id:'demo2',name:'Quốc Bảo',avatar:'🐶',sleeping:false,sleepSince:null,lastActive:Date.now()-1000*60*20,caught:2,events:[
+    {id:'d4',title:'Đá bóng',day:1,start:'17:00',end:'19:00',tag:'Chơi',repeat:true},
+    {id:'d5',title:'Học nhóm',day:3,start:'19:00',end:'21:00',tag:'Học',repeat:true}]}
+ ],
+ sleep:{sleeping:false,since:null,history:[{date:'Hôm qua',hours:7.5,score:92,bed:'23:10',wake:'06:40',caught:0}]},
+ settings:{remindMin:15}};
+}
+if(!db.friends) db.friends=[]; if(!db.overrides) db.overrides={}; if(!db.sleep) db.sleep={sleeping:false,since:null,history:[]};
+
+// ---------- Supabase (tùy chọn, không có config thì app chạy local bình thường) ----------
+try{
+ if(window.APP_CONFIG && APP_CONFIG.SUPABASE_URL && APP_CONFIG.SUPABASE_ANON_KEY && window.supabase){
+   supa=supabase.createClient(APP_CONFIG.SUPABASE_URL, APP_CONFIG.SUPABASE_ANON_KEY);
+   $('syncBadge').textContent='☁️ Đã nối Supabase (nếu bảng đúng schema)';
+ }
+}catch(e){}
+async function syncCloud(){
+ if(!supa) return;
+ try{
+  await supa.from('profiles').upsert({id:db.profile.id,username:currentUser&&currentUser!=='__demo__'?currentUser:null,name:db.profile.name,avatar:db.profile.avatar,sleeping:db.sleep.sleeping,sleep_since:db.sleep.since?new Date(db.sleep.since).toISOString():null,last_active:new Date().toISOString()});
+  for(const ev of db.events){ await supa.from('events').upsert({id:ev.id,owner_id:db.profile.id,title:ev.title,weekday:ev.day,start_time:ev.start,end_time:ev.end,tag:ev.tag,repeat_weekly:ev.repeat,note:ev.note||''}); }
+ }catch(e){}
+}
+function markActive(){
+ // Nếu đang ở chế độ ngủ mà vẫn thao tác trong app -> ghi "lỡ tay online"
+ if(db.sleep.sleeping){ db.sleep.caught=(db.sleep.caught||0)+1; }
+ db.profile.lastActive=Date.now();
+}
+document.addEventListener('click',()=>{ if(db.sleep.sleeping){ db.sleep.caught=(db.sleep.caught||0)+1; localStorage.setItem(DB_KEY,JSON.stringify(db)); } },{passive:true});
+
+// ---------- Tabs / tuần ----------
+function showTab(name,el){ document.querySelectorAll('section[id^="tab-"]').forEach(s=>s.style.display='none'); $('tab-'+name).style.display='block'; document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); if(el) el.classList.add('active'); renderAll(); }
+function currentMonday(){const m=mondayOf(today); m.setDate(m.getDate()+weekOffset*7); return m}
+function moveWeek(n){weekOffset+=n;renderAll()}
+function goToday(){weekOffset=0;renderAll()}
+function eventsForWeek(events, wk){
+ const ov=db.overrides[wk]||{};
+ return events.filter(ev=>{
+   if(ov[ev.id] && ov[ev.id].deleted) return false;
+   if(!ev.repeat) return (ev.week||weekKey(today))===wk; // lịch 1 lần: chỉ hiện đúng tuần của nó
+   return true;
+ }).map(ev=>({...ev, ...(ov[ev.id]||{})}));
+}
+function renderWeek(container, events, wk, mine){
+ const mon=mondayOf(today); mon.setDate(mon.getDate()+weekOffset*7);
+ const names=['Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','Chủ nhật'];
+ container.innerHTML='';
+ names.forEach((n,i)=>{
+   const d=new Date(mon); d.setDate(d.getDate()+i); const isToday=d.getTime()===today.getTime();
+   const list=events.filter(e=>e.day===i).sort((a,b)=>a.start.localeCompare(b.start));
+   const div=document.createElement('div'); div.className='day'+(isToday?' today':'');
+   div.innerHTML=`<h3>${n}</h3><small>${fmtDate(d)}${isToday?' • hôm nay':''}</small>`+
+     (list.length?list.map(e=>`<div class="ev ${e.tag}" onclick="${mine?`editEvent('${e.id}')`:`void(0)`}"><b>${e.title}</b><span class="meta">${e.start} – ${e.end} • ${e.tag}${e.note?' • '+e.note:''}${db.overrides[wk]&&db.overrides[wk][e.id]?' • ✏️ tuần này':''}</span></div>`).join(''):'<p class="muted" style="margin-top:8px">Trống ✨</p>');
+   container.appendChild(div);
+ });
+ const sun=new Date(mon); sun.setDate(sun.getDate()+6);
+ $('weekLabel').textContent=`Tuần ${fmtDate(mon)} – ${fmtDate(sun)}`;
+}
+function renderAll(){
+ $('whoami').textContent=currentUser==='__demo__'?'👀 Đang dùng demo':(currentUser?('👤 @'+currentUser):'');
+ const wk=weekKey(currentMonday());
+ const myEvents=eventsForWeek(db.events,wk);
+ renderWeek($('days'),myEvents,wk,true);
+ // Hôm nay
+ const di=(today.getDay()+6)%7;
+ const todays=myEvents.filter(e=>e.day===di).sort((a,b)=>a.start.localeCompare(b.start));
+ $('todayList').innerHTML=todays.length?todays.map(e=>`<span class="chip">⏰ ${e.start} ${e.title}</span>`).join(' '):'Chưa có lịch hôm nay. Thêm một cái cho ngày đỡ trống nhé!';
+ // Bạn bè
+ $('friendList').innerHTML=db.friends.length?db.friends.map(f=>`<div class="friend"><div class="avatar" style="background:#e8f4ff">${f.avatar}</div><div style="flex:1"><b>${f.name}</b><p>${f.sleeping?'🌙 Đang ngủ':'💬 Đang thức'} • online lần cuối: ${f.lastActive?new Date(f.lastActive).toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'}):'không rõ'}${f.demo?' • bạn mẫu':''}</p></div><button class="btn small" onclick="viewFriend('${f.id}')">Xem lịch</button><button class="btn small white" onclick="checkVar('${f.id}')">🕵️ Check var</button><button class="btn small white" onclick="unfollow('${f.id}')">Bỏ follow</button></div>`).join(''):'<p class="muted">Chưa follow ai. Nhập mã chia sẻ của bạn bè ở trên để thấy lịch thật của họ nhé.</p>';
+ if(selectedFriend){ viewFriend(selectedFriend,true); } else { $('friendWeekLabel').textContent='Chọn một bạn ở trên để xem lịch tuần của họ.'; $('friendDays').innerHTML=''; $('commonFree').innerHTML=''; }
+ // Ngủ
+ const s=db.sleep;
+ $('mySleepStatus').innerHTML=s.sleeping?`🌙 Bạn đang ở chế độ ngủ từ <b>${new Date(s.since).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'})}</b>. Bạn bè sẽ thấy bạn offline ngủ.${s.caught?` Bạn đã lỡ tay online <b>${s.caught} lần</b> trong lúc ngủ 👀`:''}`:'💬 Bạn đang thức. Bấm “Tui đi ngủ đây” khi chuẩn bị ngủ để bạn bè check var được chính xác.';
+ $('sleepBtn').textContent=s.sleeping?'☀️ Tui dậy rồi':'😴 Tui đi ngủ đây';
+ const hist=s.history||[]; const avg=hist.length?Math.round(hist.reduce((a,b)=>a+b.score,0)/hist.length):0;
+ const avgH=hist.length?(hist.reduce((a,b)=>a+b.hours,0)/hist.length).toFixed(1):'—';
+ $('mySleepStats').innerHTML=`<p><span class="chip">⭐ Điểm TB: ${avg}/100</span> <span class="chip">⏱ Ngủ TB: ${avgH}h</span> <span class="chip">🔥 Chuỗi: ${hist.length} ngày ghi lại</span></p>`;
+ $('sleepHistory').innerHTML=hist.length?hist.slice(0,7).map(h=>`<p><b>${h.date}</b>: ${h.hours}h • ${h.bed||'?'} → ${h.wake||'?'} • <b>${h.score}/100</b> ${h.caught?`• lỡ tay ${h.caught} lần 👀`:''}</p><div class="sleepbar"><i style="width:${h.score}%"></i></div>`).join(''):'<p class="muted">Chưa có lịch sử. Ngủ một giấc rồi dậy bấm “Tui dậy rồi” là có điểm ngay.</p>';
+ $('checkList').innerHTML=db.friends.length?db.friends.map(f=>`<div class="friend"><div class="avatar" style="background:#e8f4ff">${f.avatar}</div><div style="flex:1"><b>${f.name}</b><p>${f.sleeping?'🌙 Đang bật chế độ ngủ':'💬 Không bật chế độ ngủ'}</p></div><button class="btn small" onclick="checkVar('${f.id}')">🕵️ Check var</button></div>`).join(''):'<p class="muted">Chưa có bạn để check. Follow bạn bè trước nhé.</p>';
+ $('modeText').textContent=supa?'Supabase đã nối — lịch có thể đồng bộ trực tiếp (cần bảng đúng schema.sql).':'Local + mã chia sẻ — chưa nối Supabase, dữ liệu lưu trên máy này.';
+ $('remindMin').value=db.settings?.remindMin||15;
+}
+function resetWeek(){ const wk=weekKey(currentMonday()); if(!db.overrides[wk]||!Object.keys(db.overrides[wk]).length){toast('Tuần này đang là lịch gốc rồi, không có gì để reset ✨');return} if(!confirm('Reset tuần này về lịch gốc? Các sửa/xóa riêng của tuần này sẽ mất.'))return; delete db.overrides[wk]; save(); toast('Đã reset tuần này về lịch gốc ↩'); }
+
+// ---------- Thêm / sửa lịch ----------
+function openEventForm(ev){
+ const isEdit=!!ev;
+ $('modalBox').innerHTML=`<h2>${isEdit?'✏️ Sửa lịch':'＋ Thêm lịch mới'}</h2>
+ <label>Tên lịch</label><input id="fTitle" value="${ev?.title||''}" placeholder="VD: Học nhóm, đá bóng…">
+ <div class="grid2"><div><label>Ngày trong tuần</label><select id="fDay">${['Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','Chủ nhật'].map((n,i)=>`<option value="${i}" ${ev?.day===i?'selected':''}>${n}</option>`).join('')}</select></div>
+ <div><label>Nhóm</label><select id="fTag">${TAGS.map(t=>`<option ${ev?.tag===t?'selected':''}>${t}</option>`).join('')}</select></div></div>
+ <div class="grid2"><div><label>Bắt đầu</label><input type="time" id="fStart" value="${ev?.start||'08:00'}"></div><div><label>Kết thúc</label><input type="time" id="fEnd" value="${ev?.end||'09:00'}"></div></div>
+ <label>Ghi chú</label><input id="fNote" value="${ev?.note||''}" placeholder="VD: Mang vở, nhớ mang áo mưa…">
+ <label><input type="checkbox" id="fRepeat" ${ev?ev.repeat?'checked':'': 'checked'} style="width:auto"> Lặp lại hàng tuần (nếu lịch không đổi)</label>
+ <p class="muted">Khi sửa lịch lặp lại, bạn sẽ được chọn: sửa tuần này thôi, hay sửa luôn mẫu cho mọi tuần sau.</p>
+ <div class="row"><button class="btn" onclick="saveEvent('${ev?.id||''}')">💾 Lưu lịch</button>${isEdit?`<button class="btn danger" onclick="deleteEvent('${ev.id}')">🗑 Xóa</button>`:''}<button class="btn white" onclick="closeModal()">Đóng</button></div>`;
+ $('modal').classList.add('open');
+}
+function editEvent(id){ const wk=weekKey(currentMonday()); const base=db.events.find(e=>e.id===id); if(!base) return; const ov=(db.overrides[wk]||{})[id]||{}; openEventForm({...base,...ov}); }
+function saveEvent(id){
+ const data={title:$('fTitle').value.trim(),day:+$('fDay').value,start:$('fStart').value,end:$('fEnd').value,tag:$('fTag').value,repeat:$('fRepeat').checked,note:$('fNote').value.trim()};
+ if(!data.title){alert('Nhập tên lịch đã bro');return}
+ const wk=weekKey(currentMonday());
+ if(!id){ data.id=uid(); data.week=wk; db.events.push(data); }
+ else{
+   const base=db.events.find(e=>e.id===id);
+   if(base.repeat && confirm('Sửa luôn mẫu lặp lại cho mọi tuần?\nOK = sửa mọi tuần • Cancel = chỉ sửa tuần này thôi')){
+     Object.assign(base,data);
+   } else {
+     db.overrides[wk]=db.overrides[wk]||{}; db.overrides[wk][id]=data;
+   }
+ }
+ closeModal(); save(); toast('Đã lưu lịch 💙');
+}
+function deleteEvent(id){
+ const wk=weekKey(currentMonday()); const base=db.events.find(e=>e.id===id);
+ if(base.repeat && confirm('Xóa luôn mẫu lặp lại?\nOK = xóa mọi tuần • Cancel = chỉ xóa tuần này thôi')){ db.events=db.events.filter(e=>e.id!==id); }
+ else { db.overrides[wk]=db.overrides[wk]||{}; db.overrides[wk][id]={deleted:true}; }
+ closeModal(); save(); toast('Đã xóa (tuần này / mẫu) 🗑');
+}
+function closeModal(){ $('modal').classList.remove('open'); }
+$('modal').addEventListener('click',e=>{if(e.target.id==='modal') closeModal()});
+
+// ---------- Hồ sơ / bạn bè / chia sẻ ----------
+const EMOJIS=['🐰','🐱','🐶','🐻','🐼','🦊','🐨','⭐','🌸','🍓','🧸','💙'];
+function openProfile(){
+ $('modalBox').innerHTML=`<h2>👤 Hồ sơ của tui</h2><p class="muted">Tài khoản: ${currentUser==='__demo__'?'demo (dùng thử)': '@'+currentUser}</p><label>Tên hiển thị</label><input id="pName" value="${db.profile.name}">
+ <label>Chọn avatar cute</label><div class="emojis">${EMOJIS.map(e=>`<button class="${db.profile.avatar===e?'sel':''}" onclick="pickAvatar('${e}',this)">${e}</button>`).join('')}</div>
+ <label style="display:block;margin-top:12px">Hoặc tải ảnh của bạn lên</label><input type="file" accept="image/*" onchange="uploadAvatar(event)">
+ <div class="row" style="margin-top:12px"><button class="btn" onclick="saveProfile()">💾 Lưu hồ sơ</button><button class="btn white" onclick="closeModal()">Đóng</button></div>`;
+ $('modal').classList.add('open');
+}
+let tmpAvatar=null;
+function pickAvatar(e,btn){ tmpAvatar=e; document.querySelectorAll('.emojis button').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); }
+function uploadAvatar(ev){ const f=ev.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{tmpAvatar=r.result; toast('Đã chọn ảnh, bấm Lưu hồ sơ nhé 📸')}; r.readAsDataURL(f); }
+function saveProfile(){ db.profile.name=$('pName').value.trim()||db.profile.name; if(tmpAvatar) db.profile.avatar=tmpAvatar; tmpAvatar=null; closeModal(); save(); toast('Đã đổi hồ sơ ✨'); }
+function emptyData(name,avatar){
+ return {profile:{id:uid(),name:name||'Bạn Cute',avatar:avatar||'🐰',color:'#a5d8ff'},
+ events:[],overrides:{},friends:[],
+ sleep:{sleeping:false,since:null,history:[]},settings:{remindMin:15}};
+}
+function clearCurrentAccount(){
+ if(!confirm('Dọn trống tài khoản này? Lịch, bạn bè và lịch sử ngủ sẽ bị xóa, chỉ giữ lại tên và avatar.')) return;
+ const keep={name:db.profile.name,avatar:db.profile.avatar};
+ db=emptyData(keep.name,keep.avatar); save(); toast('Đã dọn trống tài khoản này ✨');
+}
+function clearAllAccounts(){
+ if(!confirm('Xóa TẤT CẢ tài khoản đã lưu trên máy này? Bạn sẽ phải đăng ký lại từ đầu, tài khoản mới sẽ trống.')) return;
+ localStorage.removeItem(ACC_KEY); localStorage.removeItem(SES_KEY); localStorage.removeItem(DB_KEY); location.reload();
+}
+function baseUrl(){ return location.href.split('?')[0].split('#')[0]; }
+function b64urlEncode(str){ return btoa(unescape(encodeURIComponent(str))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+function b64urlDecode(str){ try{ str=str.replace(/-/g,'+').replace(/_/g,'/'); while(str.length%4) str+='='; return decodeURIComponent(escape(atob(str))); }catch(e){ return null; } }
+function shareMe(){
+ // Link ngắn dễ nhớ: chỉ dùng được khi đã nối Supabase, vì link chỉ mang tên
+ // đăng nhập, dữ liệu thật lấy từ Supabase khi bạn bè mở link.
+ if(supa && currentUser && currentUser!=='__demo__'){
+   const link=baseUrl()+'?u='+encodeURIComponent(currentUser);
+   $('modalBox').innerHTML=`<h2>🔗 Link chia sẻ của tui</h2><p class="sub">Link ngắn, dễ nhớ, đúng tên đăng nhập của bạn. Bạn bè mở link là app tự nhận bạn.</p><code>${link}</code><div class="row" style="margin-top:12px"><button class="btn" onclick="navigator.clipboard.writeText('${link}').then(()=>toast('Đã copy link 📋'))">📋 Copy link</button><button class="btn white" onclick="closeModal()">Đóng</button></div><p class="muted">Link này lấy lịch trực tiếp từ Supabase, bạn đổi lịch là bạn bè thấy mới, không cần gửi lại.</p>`;
+ } else {
+   // Chưa có Supabase: link phải mang theo dữ liệu nên nó dài, không thể ngắn
+   // như tên được. Dạng gọn: [tên, avatar, [tiêu đề, thứ, bắt đầu, kết thúc, nhóm, lặp, ghi chú]...]
+   const compact=[db.profile.name,db.profile.avatar,db.events.map(e=>[e.title,e.day,e.start,e.end,e.tag,e.repeat?1:0,e.note||'']),db.sleep.sleeping?1:0,db.sleep.since||0];
+   const link=baseUrl()+'?s='+b64urlEncode(JSON.stringify(compact));
+   $('modalBox').innerHTML=`<h2>🔗 Link chia sẻ của tui</h2><p class="sub">Bạn chưa nối Supabase nên link này phải mang theo dữ liệu, vì vậy nó dài. Muốn link ngắn dạng <b>?u=tên-đăng-nhập</b> thì bật Supabase theo README là xong.</p><code>${link}</code><div class="row" style="margin-top:12px"><button class="btn" onclick="navigator.clipboard.writeText('${link}').then(()=>toast('Đã copy link 📋'))">📋 Copy link</button><button class="btn white" onclick="closeModal()">Đóng</button></div><p class="muted">Bạn bè mở link là app tự nhận bạn, không cần dán mã nữa.</p>`;
+ }
+ $('modal').classList.add('open');
+}
+function addFriendObject(f){
+ db.friends=db.friends.filter(x=>x.name!==f.name); db.friends.push(f); save(); toast(`Đã follow ${f.name} 💙`);
+}
+async function fetchFriendByUsername(username){
+ if(!supa) return null;
+ const {data:prof}=await supa.from('profiles').select('*').eq('username',username).limit(1).maybeSingle();
+ if(!prof) return null;
+ const {data:evs}=await supa.from('events').select('*').eq('owner_id',prof.id);
+ return {id:uid(),name:prof.name,avatar:prof.avatar,events:(evs||[]).map(e=>({id:e.id,title:e.title,day:e.weekday,start:e.start_time,end:e.end_time,tag:e.tag,repeat:!!e.repeat_weekly,note:e.note||''})),sleeping:!!prof.sleeping,sleepSince:prof.sleep_since?new Date(prof.sleep_since).getTime():null,lastActive:prof.last_active?new Date(prof.last_active).getTime():Date.now(),caught:0,fromLink:true};
+}
+async function addFriendByName(){
+ const n=$('friendName').value.trim().toLowerCase(); if(!n) return alert('Nhập tên đăng nhập của bạn đã (VD: lecute)');
+ if(!supa) return alert('Tìm bạn bằng tên ngắn chỉ dùng được khi đã nối Supabase. Chưa nối thì bạn bè gửi link cho bạn, bạn dán link vào ô bên dưới nhé.');
+ const f=await fetchFriendByUsername(n);
+ if(!f) return alert('Không tìm thấy bạn @'+n+' trên Supabase. Kiểm tra lại tên, hoặc bạn đó chưa lưu lịch lên Supabase.');
+ $('friendName').value=''; addFriendObject(f);
+}
+function importFriend(){
+ try{
+   const raw=$('friendCode').value.trim(); if(!raw) return alert('Dán link của bạn bè vào đã bro');
+   // Dán cả link: ?u=tên hoặc ?s=dữ-liệu
+   const uMatch=raw.match(/[?&]u=([^&#\s]+)/);
+   if(uMatch){ const name=decodeURIComponent(uMatch[1]); $('friendCode').value=''; fetchFriendByUsername(name).then(f=>{ if(!f) alert('Không tìm thấy bạn @'+name+' trên Supabase.'); else addFriendObject(f); }); return; }
+   const sMatch=raw.match(/[?&#]s=([A-Za-z0-9\-_]+)/);
+   const code=sMatch?sMatch[1]:raw;
+   let data=null;
+   const decoded=b64urlDecode(code);
+   if(decoded){ try{ const c=JSON.parse(decoded); if(Array.isArray(c)){ data={profile:{name:c[0],avatar:c[1]},events:(c[2]||[]).map(e=>({id:uid(),title:e[0],day:e[1],start:e[2],end:e[3],tag:e[4],repeat:!!e[5],note:e[6]||''})),sleeping:!!c[3],sleepSince:c[4]||null}; } else data=c; }catch(e){} }
+   if(!data){ data=JSON.parse(decodeURIComponent(escape(atob(code)))); }
+   const f={id:uid(),name:data.profile.name,avatar:data.profile.avatar,events:data.events||[],sleeping:!!data.sleeping,sleepSince:data.sleepSince||null,lastActive:data.lastActive||Date.now(),caught:0,fromCode:true};
+   $('friendCode').value=''; addFriendObject(f);
+ }catch(e){alert('Link này không đọc được, kiểm tra lại giúp mình nhé.')}
+}
+async function autoImportFromUrl(){
+ try{
+   const params=new URLSearchParams(location.search);
+   const u=params.get('u'), s=params.get('s');
+   if(u){
+     if(!supa){ toast('Link này cần Supabase để lấy lịch, bạn nối Supabase rồi mở lại link nhé.'); return; }
+     const f=await fetchFriendByUsername(u);
+     if(f){ addFriendObject(f); history.replaceState(null,'',baseUrl()); }
+     else toast('Không tìm thấy bạn @'+u+' trên Supabase.');
+   } else if(s){
+     const decoded=b64urlDecode(s); if(!decoded) return;
+     const c=JSON.parse(decoded);
+     if(Array.isArray(c)){
+       const f={id:uid(),name:c[0],avatar:c[1],events:(c[2]||[]).map(e=>({id:uid(),title:e[0],day:e[1],start:e[2],end:e[3],tag:e[4],repeat:!!e[5],note:e[6]||''})),sleeping:!!c[3],sleepSince:c[4]||null,lastActive:Date.now(),caught:0,fromLink:true};
+       addFriendObject(f); history.replaceState(null,'',baseUrl());
+     }
+   }
+ }catch(e){}
+}
+function unfollow(id){ db.friends=db.friends.filter(f=>f.id!==id); if(selectedFriend===id) selectedFriend=null; save(); }
+function viewFriend(id,quiet){
+ const f=db.friends.find(x=>x.id===id); if(!f) return; selectedFriend=id;
+ const wk=weekKey(currentMonday()); $('friendWeekLabel').textContent=`Lịch tuần của ${f.name} — tuần ${fmtDate(currentMonday())}`;
+ renderWeek($('friendDays'),f.events||[],wk,false);
+ // Giờ trống chung (khung 8h-21h, theo ngày)
+ const di=(today.getDay()+6)%7; const mine=eventsForWeek(db.events,wk).filter(e=>e.day===di); const theirs=(f.events||[]).filter(e=>e.day===di);
+ const busy=new Set(); [...mine,...theirs].forEach(e=>{let h=+e.start.slice(0,2); const end=+e.end.slice(0,2); for(;h<end;h++) busy.add(h)});
+ const free=[]; for(let h=8;h<21;h++) if(!busy.has(h)) free.push(h+':00');
+ $('commonFree').innerHTML=`<p><b>🫶 Rảnh chung hôm nay (ước lượng theo giờ):</b> ${free.length?free.join(', '):'Hôm nay cả hai đều kín lịch rồi 😅'}</p>`;
+ if(!quiet) showTab('banbe',document.querySelector('[data-tab="banbe"]'));
+}
+
+// ---------- Ngủ & check var ----------
+function sleepScore(hours,bedHour,caught){
+ let s=0;
+ if(hours>=7&&hours<=9) s+=45; else if(hours>=6&&hours<7||hours>9&&hours<=10) s+=32; else s+=18;
+ if(bedHour<23.5) s+=35; else if(bedHour<24.5) s+=22; else s+=10;
+ s+=20; s-=Math.min(20,(caught||0)*5); return Math.max(10,Math.min(100,s));
+}
+function toggleSleep(){
+ const s=db.sleep;
+ if(!s.sleeping){ s.sleeping=true; s.since=Date.now(); s.caught=0; toast('Ngủ ngon nhé 🌙 Bạn bè sẽ thấy bạn offline ngủ.'); }
+ else{
+   const hours=Math.max(0.5,Math.round(((Date.now()-s.since)/3600000)*10)/10);
+   const bed=new Date(s.since); const bedHour=bed.getHours()+bed.getMinutes()/60;
+   const score=sleepScore(hours,bedHour,s.caught||0);
+   s.history.unshift({date:new Date().toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'}),hours,score,bed:bed.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}),wake:new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}),caught:s.caught||0});
+   s.sleeping=false; s.since=null; s.caught=0;
+   toast(`Dậy rồi nè ☀️ Ngủ ${hours}h — điểm giấc ngủ: ${score}/100`);
+ }
+ save();
+}
+function logSleepManual(){
+ const h=prompt('Ngủ được mấy tiếng? (VD: 7.5)'); if(!h) return; const hours=parseFloat(h); if(isNaN(hours)) return;
+ const score=sleepScore(hours,23,0); db.sleep.history.unshift({date:new Date().toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'}),hours,score,bed:'?',wake:'?',caught:0}); save(); toast(`Đã ghi: ${hours}h — ${score}/100 ⭐`);
+}
+function verdict(f){
+ if(!f.sleeping) return {icon:'💬',text:'Không bật chế độ ngủ — app không suy đoán, chỉ báo là bạn này đang thức / không rõ.'};
+ const since=f.sleepSince||f.lastActive;
+ const minsSinceSleep=since?Math.round((Date.now()-since)/60000):null;
+ const activeAfterSleep=f.lastActive&&since&&f.lastActive>since+60000;
+ if(f.caught && f.caught>0) return {icon:'👀',text:`NGHI VẤN! Bạn này bật ngủ từ ${new Date(since).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'})} nhưng đã lỡ tay online ${f.caught} lần. Check var thất bại 😆`};
+ if(activeAfterSleep) return {icon:'👀',text:'Nghi vấn: sau khi bật ngủ vẫn thấy hoạt động mới. Có thể vẫn chưa ngủ thật đâu nha.'};
+ return {icon:'✅',text:`Ngủ thật! Đang ngủ từ ${new Date(since).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'})} (${minsSinceSleep} phút trước), không thấy hoạt động nào sau đó. Ngủ ngon 💙`};
+}
+function checkVar(id){
+ const f=db.friends.find(x=>x.id===id); if(!f) return; const v=verdict(f);
+ $('modalBox').innerHTML=`<h2>🕵️ Check var: ${f.name}</h2><div class="friend"><div class="avatar">${f.avatar}</div><div><b>${f.name}</b><p>${f.sleeping?'🌙 Đang bật chế độ ngủ':'💬 Đang thức / không bật ngủ'}</p></div></div><p style="font-size:17px;margin-top:14px">${v.icon} <b>${v.text}</b></p><p class="muted">Dựa trên: trạng thái ngủ do bạn đó tự bật + lần online cuối trong app này. Không theo dõi ngoài app.</p><button class="btn" onclick="closeModal()">Ok, biết rồi 😆</button>`;
+ $('modal').classList.add('open');
+}
+function saveSettings(){ db.settings.remindMin=+$('remindMin').value; localStorage.setItem(DB_KEY,JSON.stringify(db)); }
+function askNotif(){ if(!('Notification' in window)) return alert('Trình duyệt này không hỗ trợ thông báo hệ thống, app vẫn nhắc trong app nhé.'); Notification.requestPermission().then(p=>toast(p==='granted'?'Đã bật nhắc hẹn 🔔':'Bạn chưa cho phép thông báo, app vẫn nhắc trong app nhé.')); }
+function checkReminders(){
+ const now=new Date(); const di=(today.getDay()+6)%7; const wk=weekKey(today);
+ const events=eventsForWeek(db.events,wk).filter(e=>e.day===di);
+ const min=db.settings?.remindMin||15;
+ events.forEach(e=>{
+   const [h,m]=e.start.split(':').map(Number); const t=new Date(); t.setHours(h,m,0,0); const diff=Math.round((t-now)/60000);
+   const key=`rem-${wk}-${e.id}`; if(diff===min && !sessionStorage.getItem(key)){ sessionStorage.setItem(key,'1'); const msg=`⏰ Sắp tới: ${e.title} lúc ${e.start}`; toast(msg); if(Notification.permission==='granted') new Notification('Lịch Cute 💙',{body:msg}); }
+ });
+}
+setInterval(checkReminders,30000); checkReminders();
+function exportBackup(){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:'application/json'})); a.download='lich-cute-backup.json'; a.click(); }
+function importBackup(ev){ const f=ev.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{try{db=JSON.parse(r.result); save(); toast('Đã nhập backup 💙')}catch(e){alert('File backup không đọc được.')}}; r.readAsText(f); }
+if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{})); }
+// ---------- Đăng ký / Đăng nhập (local, giữ dữ liệu demo cũ) ----------
+async function hashPass(pw){
+ try{
+   if(crypto.subtle){ const buf=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw)); return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join(''); }
+ }catch(e){}
+ let h=0; for(let i=0;i<pw.length;i++){ h=((h<<5)-h+pw.charCodeAt(i))|0; } return 'fallback'+h;
+}
+function showAuth(){$('authOverlay').classList.add('open')}
+function hideAuth(){$('authOverlay').classList.remove('open')}
+function authTab(mode){
+ $('loginForm').style.display=mode==='login'?'block':'none';
+ $('registerForm').style.display=mode==='register'?'block':'none';
+ $('tabLogin').className=mode==='login'?'btn':'btn white';
+ $('tabRegister').className=mode==='register'?'btn':'btn white';
+}
+function enterAccount(username, data){
+ currentUser=username; localStorage.setItem(SES_KEY, username);
+ db=data; if(!db.friends) db.friends=[]; if(!db.overrides) db.overrides={}; if(!db.sleep) db.sleep={sleeping:false,since:null,history:[]};
+ localStorage.setItem(DB_KEY, JSON.stringify(db)); hideAuth(); renderAll(); autoImportFromUrl();
+}
+async function doLogin(){
+ const u=$('loginUser').value.trim().toLowerCase(), p=$('loginPass').value;
+ const a=loadAccounts();
+ if(!u || !a[u]) return alert('Chưa có tài khoản này. Bạn đăng ký mới hoặc bấm vào demo nhé.');
+ if(a[u].passHash !== await hashPass(p)) return alert('Sai mật khẩu rồi bro, thử lại nhé.');
+ enterAccount(u, a[u].data); toast('Đăng nhập thành công, chào '+ (a[u].data.profile?.name||u) +' 💙');
+}
+async function doRegister(){
+ const u=$('regUser').value.trim().toLowerCase(), name=$('regName').value.trim(), p=$('regPass').value, p2=$('regPass2').value;
+ if(!/^[a-z0-9_.]{3,20}$/.test(u)) return alert('Tên đăng nhập 3-20 ký tự, chỉ chữ thường, số, _ và . thôi nhé.');
+ if(!name) return alert('Nhập tên hiển thị đã bro.');
+ if(p.length<4) return alert('Mật khẩu tối thiểu 4 ký tự nhé.');
+ if(p!==p2) return alert('Hai mật khẩu chưa khớp nhau.');
+ const a=loadAccounts(); if(a[u]) return alert('Tên này có người dùng rồi, chọn tên khác nhé.');
+ const data=emptyData(name,'🐰');
+ a[u]={passHash: await hashPass(p), data}; persistAccounts(a);
+ enterAccount(u, data); toast('Đăng ký xong, chào '+name+' ✨ Dữ liệu demo đã có sẵn để bạn test.');
+}
+function useDemo(){
+ const a=loadAccounts();
+ if(a['__demo__']) { enterAccount('__demo__', a['__demo__'].data); }
+ else { const data=load()||seed(); a['__demo__']={passHash:'', data}; persistAccounts(a); enterAccount('__demo__', data); }
+ toast('Đang dùng dữ liệu demo 💙');
+}
+function resetDemo(){
+ const a=loadAccounts(); const data=seed(); a['__demo__']={passHash:'', data}; persistAccounts(a);
+ enterAccount('__demo__', data); toast('Đã khôi phục lại lịch demo mẫu 💙');
+}
+function logout(){
+ save(); currentUser=null; localStorage.removeItem(SES_KEY); $('loginUser').value=''; $('loginPass').value=''; showAuth();
+}
+(function initAuth(){
+ const ses=localStorage.getItem(SES_KEY), a=loadAccounts();
+ if(ses && a[ses]) { enterAccount(ses, a[ses].data); }
+ else { renderAll(); showAuth(); }
+})();
+</script>
+</body>
+</html>
